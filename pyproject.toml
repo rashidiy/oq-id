@@ -10,6 +10,12 @@ python = "^3.12"
 fastapi = {extras = ["standard"], version = "^0.115.0"}
 setuptools = "^75.1.0"
 pybabel = "^0.0.0.dev0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.35"}
+asyncpg = "^0.29.0"
+alembic = "^1.13.3"
+pydantic = "^2.9.2"
+python-dotenv = "^1.0.1"
+psycopg2-binary = "^2.9.9"
 
 
 [build-system]
