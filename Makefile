@@ -7,3 +7,7 @@ init:
 
 compile:
 	pybabel compile -d translations
+
+mig:
+	alembic revision --autogenerate
+	alembic upgrade head
