@@ -1,6 +1,5 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-
 from utils.translations import set_locale
 
 

@@ -10,19 +10,17 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from apps.models import Base
 
-# Load environment variables from .env
 load_dotenv()
 
-# this is the Alembic Config object, which provides access to the values within the .ini file in use.
 config = context.config
 
-# Override sqlalchemy.url with the one from environment variables
-# Check for mandatory environment variables and raise meaningful errors if not found
+
 def get_env_variable(var_name):
     value = os.getenv(var_name)
     if not value:
         raise EnvironmentError(f"Set the {var_name} environment variable")
     return value
+
 
 config.set_main_option(
     "sqlalchemy.url",
@@ -30,11 +28,9 @@ config.set_main_option(
     f"@{get_env_variable('DB_HOST')}:{get_env_variable('DB_PORT')}/{get_env_variable('DB_NAME')}"
 )
 
-
 # Interpret the config file for Python logging.
 fileConfig(config.config_file_name)
 
-# Set the target metadata (i.e., your models' metadata)
 target_metadata = Base.metadata
 
 
