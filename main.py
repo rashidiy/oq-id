@@ -12,8 +12,11 @@ from utils.translations import _
 BASE_DIR = os.path.dirname(__file__)
 
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
-
-app = FastAPI(docs_url="/")
+app = FastAPI(
+    title="OQ-ID APIGATEWAY",
+    version="1.0",
+    docs_url='/',
+)
 app.add_middleware(LanguageMiddleware)  # noqa
 
 
