@@ -1,31 +1,7 @@
-from datetime import datetime
+from sqlalchemy import BigInteger, Boolean, Date, ForeignKey, String
+from sqlalchemy.orm import (Mapped, mapped_column, relationship)
 
-from sqlalchemy import BigInteger, Boolean, Date, DateTime, ForeignKey, String
-from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
-from sqlalchemy.orm import (DeclarativeBase, Mapped, declared_attr,
-                            mapped_column, relationship)
-
-
-class Base(AsyncAttrs, DeclarativeBase):
-    __abstract__ = True
-
-    @declared_attr
-    def __tablename__(cls) -> str: 
-        name = cls.__name__.lower()
-        if name.endswith('y'):
-            name = name[:-1] + 'ie'
-        return name + 's'
-
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-    @classmethod
-    async def create(cls, session: AsyncSession, **kwargs):
-        instance = cls(**kwargs)
-        session.add(instance)
-        await session.commit()
-        await session.refresh(instance)
-        return instance
+from models import Base
 
 
 class User(Base):
