@@ -1,6 +1,8 @@
-import asyncio
 import os
+import sys
+import asyncio
 from logging.config import fileConfig
+from pathlib import Path
 
 from alembic import context
 from dotenv import load_dotenv
@@ -8,7 +10,11 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from apps.models.auth import Base
+
+BASE_DIR = Path(__file__).parent.parent
+sys.path.append(os.path.join(BASE_DIR, 'apps'))
+
+from models import Base
 
 load_dotenv()
 
