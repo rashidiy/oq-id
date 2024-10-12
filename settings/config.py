@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
@@ -27,6 +27,13 @@ class Config:
 
 
 conf = Config()
-
 engine = create_async_engine(conf.db.db_url, echo=True, future=True)
 AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)  # noqa
+
+
+async def get_session() -> AsyncSession:
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
