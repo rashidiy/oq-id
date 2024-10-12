@@ -3,7 +3,7 @@ import sys
 
 from fastapi import FastAPI
 
-from apps.routers.users import router as user_router
+from routers.users import router as user_router
 from utils.middlewares.middlewares import init_middlewares
 
 BASE_DIR = os.path.dirname(__file__)
