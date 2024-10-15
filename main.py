@@ -3,8 +3,10 @@ import sys
 
 from fastapi import FastAPI
 
+from routers.auth.login import router as login_router
+from routers.auth.register import router as register_router
+from routers.auth.reset_password import router as reset_password
 from routers.users import router as user_router
-from routers.auth import router as auth_router
 from utils.middlewares.middlewares import init_middlewares
 
 BASE_DIR = os.path.dirname(__file__)
@@ -18,7 +20,10 @@ app = FastAPI(
 
 init_middlewares(app)
 app.include_router(user_router, prefix="/api/v1", tags=["Users"])
-app.include_router(auth_router, prefix="/api/v1", tags=["Auth"])
+app.include_router(register_router, prefix="/api/v1", tags=["Auth"])
+app.include_router(login_router, prefix="/api/v1", tags=["Auth"])
+
+app.include_router(reset_password, prefix="/api/v1", tags=["Auth"])
 
 if __name__ == "__main__":
     import uvicorn
