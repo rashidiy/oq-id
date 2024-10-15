@@ -1,2 +1,2 @@
-from .permissions import UserPermission
-from .user import User
+from .permission_models import UserPermission
+from .user_models import User
