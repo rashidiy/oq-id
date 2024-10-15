@@ -1,9 +1,10 @@
+from managers import UserManager
 from models import Base
 from sqlalchemy import BigInteger, Boolean, Date, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
-class User(Base):
+class User(Base, UserManager):
     first_name: Mapped[str] = mapped_column(String(25), nullable=True)
     last_name: Mapped[str] = mapped_column(String(25), nullable=True)
     phone_number: Mapped[str] = mapped_column(String(13), nullable=False, unique=True)

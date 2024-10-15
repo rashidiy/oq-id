@@ -4,8 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from forms.auth_forms import (LoginRequest, PreLoginRequest)
+from models.users import User
 from settings.config import Config, get_session
-from utils.helpers import (OTPManager, UserManager, AuthService)
+from utils.helpers import (OTPManager, AuthService)
 from utils.jwt import create_access_token, create_refresh_token
 from utils.password import verify_password
 from utils.translations import _  # noqa
@@ -37,7 +38,7 @@ async def pre_login(data: PreLoginRequest, db: AsyncSession = Depends(get_sessio
         }
         ```
     """
-    user = await UserManager.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(db, data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
 
@@ -75,7 +76,7 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_session)):
         }
         ```
     """
-    user = await UserManager.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(db, data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("Invalid phone number or user does not exist."))
 

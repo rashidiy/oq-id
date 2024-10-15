@@ -3,8 +3,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from forms.auth_forms import (PreResetPassword, ResetPassword)
+from models.users import User
 from settings.config import get_session
-from utils.helpers import (OTPManager, UserManager, AuthService)
+from utils.helpers import (OTPManager, AuthService)
 from utils.jwt import verify_token
 from utils.password import hash_password
 from utils.translations import _  # noqa
@@ -38,7 +39,7 @@ async def pre_reset_password(data: PreResetPassword, db: AsyncSession = Depends(
         }
         ```
     """
-    user = await UserManager.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(db, data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
 
@@ -74,7 +75,7 @@ async def reset_password(data: ResetPassword, db: AsyncSession = Depends(get_ses
     if not otp or otp != data.verification_code:
         raise HTTPException(status_code=400, detail=_("Invalid OTP or OTP expired."))
 
-    user = await UserManager.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(db, data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("User does not exist."))
 
@@ -94,7 +95,7 @@ async def get_me(credentials: HTTPAuthorizationCredentials = Depends(http_bearer
     token = credentials.credentials
     payload = verify_token(token)
 
-    user = await UserManager.get_user_by_phone_number(db, payload['sub'])
+    user = await User.get_user_by_phone_number(db, payload['sub'])
     if not user:
         raise HTTPException(status_code=404, detail=_("User not found"))
 
