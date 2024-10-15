@@ -2,7 +2,8 @@ from datetime import datetime
 
 from sqlalchemy import BigInteger, DateTime
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, declared_attr
+from sqlalchemy.orm import (DeclarativeBase, Mapped, declared_attr,
+                            mapped_column)
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -16,7 +17,7 @@ class Base(AsyncAttrs, DeclarativeBase):
         return name + 's'
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow())
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
 
     @classmethod
     async def create(cls, session: AsyncSession, **kwargs):

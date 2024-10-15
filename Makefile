@@ -8,6 +8,12 @@ init:
 compile:
 	pybabel compile -d translations
 
-mig:
-	alembic revision --autogenerate
+autogenerate:
+	alembic revision --autogenerate -m $(m)
+
+upgrade:
 	alembic upgrade head
+
+mig:
+	make autogenerate m=$(m)
+	make upgrade

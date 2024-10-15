@@ -2,7 +2,8 @@ import os
 from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
@@ -24,6 +25,18 @@ class DatabaseConfig:
 @dataclass
 class Config:
     db: DatabaseConfig = field(default_factory=DatabaseConfig)
+    SECRET_KEY: str = os.getenv('SECRET_KEY')
+    JWT_ALGORITHM = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES = 15
+    REFRESH_TOKEN_EXPIRE_DAYS = 7
+    OTP_EXPIRATION_MINUTES = 5
+    OTP_REQUEST_LIMIT = 3
+    OTP_REQUEST_TIME_WINDOW = 3600
+    OTP_REDIS_KEY_TEMPLATE = "otp:{phone_number}"
+    RATE_LIMIT_REDIS_KEY_TEMPLATE = "otp_rate_limit:{phone_number}"
+
+
+redis_client = Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
 conf = Config()

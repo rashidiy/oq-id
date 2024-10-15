@@ -2,11 +2,11 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from models.users import User
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from models.users.user import User
 from settings.config import get_session
 
 router = APIRouter()
@@ -27,10 +27,10 @@ class UserCreate(BaseModel):
 
 class UserRead(BaseModel):
     id: int
-    first_name: str
-    last_name: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     phone_number: str
-    email: Optional[str]
+    email: Optional[str] = None
     developer_mode: bool
 
 
@@ -83,7 +83,14 @@ async def read_user(user_id: int, db: AsyncSession = Depends(get_session)):
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return UserRead(
+        id=user.id,
+        first_name=user.first_name or None,
+        last_name=user.last_name or None,
+        phone_number=user.phone_number or None,
+        email=user.email or None,
+        developer_mode=user.developer_mode
+    )
 
 
 @router.put("/users/{user_id}", response_model=UserRead)

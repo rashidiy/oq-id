@@ -7,15 +7,20 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = {extras = ["standard"], version = "^0.115.0"}
+fastapi = {extras = ["all"], version = "^0.115.2"}
 setuptools = "^75.1.0"
 pybabel = "^0.0.0.dev0"
-sqlalchemy = {extras = ["asyncio"], version = "^2.0.35"}
+sqlalchemy = {extras = ["asyncpg"], version = "^2.0.35"}
 asyncpg = "^0.29.0"
 alembic = "^1.13.3"
 pydantic = "^2.9.2"
 python-dotenv = "^1.0.1"
 psycopg2-binary = "^2.9.9"
+passlib = "^1.7.4"
+bcrypt = "^4.2.0"
+python-jose = "^3.3.0"
+redis = {extras = ["asyncio"], version = "^5.1.1"}
+aioredis = "^2.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
