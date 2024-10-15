@@ -28,16 +28,9 @@ class Config:
     SECRET_KEY: str = os.getenv('SECRET_KEY')
     JWT_ALGORITHM = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES = 15
-    REFRESH_TOKEN_EXPIRE_DAYS = 7
-    OTP_EXPIRATION_MINUTES = 2
-    OTP_REQUEST_LIMIT = 1
-    OTP_REQUEST_TIME_WINDOW = 60
-    OTP_REDIS_KEY_TEMPLATE = "otp:{phone_number}"
-    RATE_LIMIT_REDIS_KEY_TEMPLATE = "otp_rate_limit:{phone_number}"
 
 
 redis_client = Redis(host='localhost', port=6379, db=0, decode_responses=True)
-
 
 conf = Config()
 engine = create_async_engine(conf.db.db_url, echo=True, future=True)
