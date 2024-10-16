@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from forms.auth_forms import (PreRegisterRequest,
                               RegisterRequest)
+from managers import UserManager
 from models.users import User
 from settings.config import Config, get_session
 from utils.helpers import (OTPManager, AuthService)
@@ -45,7 +46,6 @@ async def pre_register(data: PreRegisterRequest, db: AsyncSession = Depends(get_
             "message": _("Verification code sent to {phone_number}").format(phone_number=data.phone_number)}
 
 
-# Register a new user
 @router.post("/register", status_code=status.HTTP_200_OK)
 async def register(data: RegisterRequest, db: AsyncSession = Depends(get_session)):
     """
@@ -60,38 +60,29 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_session
     - **Responses**:
         - **200**: User registered successfully with tokens.
         - **400**: Invalid OTP or OTP expired.
-
-    - **Example**:
-        ```json
-        {
-            "success": true,
-            "access": "jwt_access_token",
-            "refresh": "jwt_refresh_token",
-            "token_type": "bearer",
-            "message": "Registration successful!"
-        }
-        ```
     """
     otp = await OTPManager.get_otp(data.phone_number, "register")
-
     if not otp or otp != data.verification_code:
         raise HTTPException(status_code=400, detail=_("Invalid OTP or OTP expired."))
-    async with db.begin():
-        try:
-            user = await User.create_user(data.phone_number, data.password, db)
-            await OTPManager.delete_otp(data.phone_number, "register")
 
-            access_token_expires = timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
-            access_token = create_access_token(data={"sub": user.phone_number}, expires_delta=access_token_expires)
-            refresh_token = create_refresh_token(data={"sub": user.phone_number})
+    if await UserManager.user_exists(data.phone_number, db):
+        raise HTTPException(status_code=400, detail=_("User with this phone number already exists."))
 
-            return {
-                "success": True,
-                "access": access_token,
-                "refresh": refresh_token,
-                "token_type": "bearer",
-                "message": _("Registration successful!")
-            }
-        except Exception as e:
-            await db.rollback()
-            raise HTTPException(status_code=500, detail=_("An error occurred during registration: ") + str(e))
+    try:
+        user = await UserManager.create_user(data.phone_number, data.password, db)
+        await OTPManager.delete_otp(data.phone_number, "register")
+        access_token_expires = timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(data={"sub": user.phone_number}, expires_delta=access_token_expires)
+        refresh_token = create_refresh_token(data={"sub": user.phone_number})
+
+        await db.commit()
+        return {
+            "success": True,
+            "access": access_token,
+            "refresh": refresh_token,
+            "token_type": "bearer",
+            "message": _("Registration successful!")
+        }
+    except Exception as e:
+        await db.rollback()
+        raise e
