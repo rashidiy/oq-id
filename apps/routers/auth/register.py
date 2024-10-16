@@ -10,8 +10,7 @@ from settings.config import Config, get_session
 from utils.helpers import (OTPManager, AuthService)
 from utils.jwt import create_access_token, create_refresh_token
 from utils.translations import _  # noqa
-
-router = APIRouter()
+from .base import router
 
 
 @router.post("/pre_register", status_code=status.HTTP_200_OK)

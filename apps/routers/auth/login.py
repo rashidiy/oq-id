@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from forms.auth_forms import (LoginRequest, PreLoginRequest)
@@ -10,8 +10,7 @@ from utils.helpers import (OTPManager, AuthService)
 from utils.jwt import create_access_token, create_refresh_token
 from utils.password import verify_password
 from utils.translations import _  # noqa
-
-router = APIRouter()
+from .base import router
 
 
 @router.post("/pre_login", status_code=status.HTTP_200_OK)
