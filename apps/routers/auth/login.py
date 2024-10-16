@@ -46,7 +46,8 @@ async def pre_login(data: PreLoginRequest, db: AsyncSession = Depends(get_sessio
         raise HTTPException(status_code=400, detail=_("Invalid password."))
 
     await AuthService.send_verification_code(data.phone_number, "login")
-    return {"success": True, "message": _("Verification code has been sent successfully.")}
+    return {"success": True,
+            "message": _("Verification code sent to {phone_number}").format(phone_number=data.phone_number)}
 
 
 # Login a user

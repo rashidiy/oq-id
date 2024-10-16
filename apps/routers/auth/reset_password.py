@@ -35,7 +35,7 @@ async def pre_reset_password(data: PreResetPassword, db: AsyncSession = Depends(
         ```json
         {
             "success": true,
-            "message": "Verification code has been sent successfully."
+            "message": "Verification code sent to +998 xx xxx xx xx"
         }
         ```
     """
@@ -44,7 +44,8 @@ async def pre_reset_password(data: PreResetPassword, db: AsyncSession = Depends(
         raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
 
     await AuthService.send_verification_code(data.phone_number, "reset_password")
-    return {"success": True, "message": _("Verification code has been sent successfully.")}
+    return {"success": True,
+            "message": _("Verification code sent to {phone_number}").format(phone_number=data.phone_number)}
 
 
 # Reset password
@@ -82,8 +83,6 @@ async def reset_password(data: ResetPassword, db: AsyncSession = Depends(get_ses
     user.password_hash = hash_password(data.password)
     db.add(user)
     await db.commit()
-    await db.refresh(user)
-
     await OTPManager.delete_otp(data.phone_number, "reset_password")
 
     return {"success": True, "message": _("Password reset successful!")}
