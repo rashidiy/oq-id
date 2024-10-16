@@ -1,6 +1,7 @@
 import os
 import sys
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from routers.auth import router as auth_router
@@ -9,6 +10,9 @@ from utils.middlewares.middlewares import init_middlewares
 
 BASE_DIR = os.path.dirname(__file__)
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
+
+load_dotenv()
+
 
 app = FastAPI(
     title="OQ-ID APIGATEWAY",
