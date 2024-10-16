@@ -1,23 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from forms.auth_forms import (PreResetPassword, ResetPassword)
 from models.users import User
-from settings.config import get_session
 from utils.helpers import (OTPManager, AuthService)
-from utils.jwt import verify_token
 from utils.password import hash_password
 from utils.translations import _  # noqa
-
-router = APIRouter()
-
-http_bearer = HTTPBearer()
+from .base import router
 
 
 # Pre-reset password
 @router.post("/pre_reset_password")
-async def pre_reset_password(data: PreResetPassword, db: AsyncSession = Depends(get_session)):
+async def pre_reset_password(data: PreResetPassword):
     """
     Pre-reset the password by sending a verification code.
 
@@ -35,22 +28,21 @@ async def pre_reset_password(data: PreResetPassword, db: AsyncSession = Depends(
         ```json
         {
             "success": true,
-            "message": "Verification code sent to +998 xx xxx xx xx"
+            "message": "Verification code has been sent successfully."
         }
         ```
     """
-    user = await User.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
 
     await AuthService.send_verification_code(data.phone_number, "reset_password")
-    return {"success": True,
-            "message": _("Verification code sent to {phone_number}").format(phone_number=data.phone_number)}
+    return {"success": True, "message": _("Verification code has been sent successfully.")}
 
 
 # Reset password
 @router.post("/reset_password", status_code=status.HTTP_200_OK)
-async def reset_password(data: ResetPassword, db: AsyncSession = Depends(get_session)):
+async def reset_password(data: ResetPassword):
     """
     Reset the user's password after verifying the OTP.
 
@@ -76,32 +68,13 @@ async def reset_password(data: ResetPassword, db: AsyncSession = Depends(get_ses
     if not otp or otp != data.verification_code:
         raise HTTPException(status_code=400, detail=_("Invalid OTP or OTP expired."))
 
-    user = await User.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("User does not exist."))
 
     user.password_hash = hash_password(data.password)
-    db.add(user)
-    await db.commit()
+    await user.save()
+
     await OTPManager.delete_otp(data.phone_number, "reset_password")
 
     return {"success": True, "message": _("Password reset successful!")}
-
-
-@router.get("/get_me")
-async def get_me(credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
-                 db: AsyncSession = Depends(get_session)):
-    token = credentials.credentials
-    payload = verify_token(token)
-
-    user = await User.get_user_by_phone_number(db, payload['sub'])
-    if not user:
-        raise HTTPException(status_code=404, detail=_("User not found"))
-
-    return {
-        "message": _("You are authorized!"),
-        "user": {
-            "user_id": user.id,
-            "phone_number": user.phone_number,
-        }
-    }
