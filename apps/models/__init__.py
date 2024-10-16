@@ -1,5 +1,6 @@
-from models.base import Base
-import models.companies
-import models.users
+from .base import Base
+
+from .companies import Company
+from .users import User, UserPermission
 
 __all__ = ['Base']

@@ -1,13 +1,12 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from forms.auth_forms import (PreRegisterRequest,
                               RegisterRequest)
 from managers import UserManager
 from models.users import User
-from settings.config import Config, get_session
+from settings.config import Config
 from utils.helpers import (OTPManager, AuthService)
 from utils.jwt import create_access_token, create_refresh_token
 from utils.translations import _  # noqa
@@ -15,7 +14,7 @@ from .base import router
 
 
 @router.post("/pre_register", status_code=status.HTTP_200_OK)
-async def pre_register(data: PreRegisterRequest, db: AsyncSession = Depends(get_session)):
+async def pre_register(data: PreRegisterRequest):
     """
     Pre-register a new user by sending a verification code to their phone number.
 
@@ -37,7 +36,7 @@ async def pre_register(data: PreRegisterRequest, db: AsyncSession = Depends(get_
         }
         ```
     """
-    if await User.user_exists(data.phone_number, db):
+    if await User.user_exists(data.phone_number):
         raise HTTPException(status_code=400, detail=_("User with this phone number already exists."))
 
     await AuthService.send_verification_code(data.phone_number, "register")
@@ -46,7 +45,7 @@ async def pre_register(data: PreRegisterRequest, db: AsyncSession = Depends(get_
 
 
 @router.post("/register", status_code=status.HTTP_200_OK)
-async def register(data: RegisterRequest, db: AsyncSession = Depends(get_session)):
+async def register(data: RegisterRequest):
     """
     Register a new user after verifying the OTP.
 
@@ -64,24 +63,19 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_session
     if not otp or otp != data.verification_code:
         raise HTTPException(status_code=400, detail=_("Invalid OTP or OTP expired."))
 
-    if await UserManager.user_exists(data.phone_number, db):
+    if await User.user_exists(data.phone_number):
         raise HTTPException(status_code=400, detail=_("User with this phone number already exists."))
 
-    try:
-        user = await UserManager.create_user(data.phone_number, data.password, db)
-        await OTPManager.delete_otp(data.phone_number, "register")
-        access_token_expires = timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(data={"sub": user.phone_number}, expires_delta=access_token_expires)
-        refresh_token = create_refresh_token(data={"sub": user.phone_number})
+    user = await User.create_user(data.phone_number, data.password)
+    await OTPManager.delete_otp(data.phone_number, "register")
+    access_token_expires = timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": user.phone_number}, expires_delta=access_token_expires)
+    refresh_token = create_refresh_token(data={"sub": user.phone_number})
 
-        await db.commit()
-        return {
-            "success": True,
-            "access": access_token,
-            "refresh": refresh_token,
-            "token_type": "bearer",
-            "message": _("Registration successful!")
-        }
-    except Exception as e:
-        await db.rollback()
-        raise e
+    return {
+        "success": True,
+        "access": access_token,
+        "refresh": refresh_token,
+        "token_type": "bearer",
+        "message": _("Registration successful!")
+    }

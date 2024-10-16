@@ -1,11 +1,10 @@
 from datetime import timedelta
 
-from fastapi import Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from forms.auth_forms import (LoginRequest, PreLoginRequest)
 from models.users import User
-from settings.config import Config, get_session
+from settings.config import Config
 from utils.helpers import (OTPManager, AuthService)
 from utils.jwt import create_access_token, create_refresh_token
 from utils.password import verify_password
@@ -14,7 +13,7 @@ from .base import router
 
 
 @router.post("/pre_login", status_code=status.HTTP_200_OK)
-async def pre_login(data: PreLoginRequest, db: AsyncSession = Depends(get_session)):
+async def pre_login(data: PreLoginRequest):
     """
     Pre-login a user by sending a verification code to their phone number.
 
@@ -37,7 +36,7 @@ async def pre_login(data: PreLoginRequest, db: AsyncSession = Depends(get_sessio
         }
         ```
     """
-    user = await User.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
 
@@ -50,7 +49,7 @@ async def pre_login(data: PreLoginRequest, db: AsyncSession = Depends(get_sessio
 
 # Login a user
 @router.post("/login", status_code=status.HTTP_200_OK)
-async def login(data: LoginRequest, db: AsyncSession = Depends(get_session)):
+async def login(data: LoginRequest):
     """
     Log in a user after verifying the OTP.
 
@@ -75,7 +74,7 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_session)):
         }
         ```
     """
-    user = await User.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("Invalid phone number or user does not exist."))
 

@@ -1,9 +1,7 @@
-from fastapi import Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from forms.auth_forms import (PreResetPassword, ResetPassword)
 from models.users import User
-from settings.config import get_session
 from utils.helpers import (OTPManager, AuthService)
 from utils.password import hash_password
 from utils.translations import _  # noqa
@@ -12,7 +10,7 @@ from .base import router
 
 # Pre-reset password
 @router.post("/pre_reset_password")
-async def pre_reset_password(data: PreResetPassword, db: AsyncSession = Depends(get_session)):
+async def pre_reset_password(data: PreResetPassword):
     """
     Pre-reset the password by sending a verification code.
 
@@ -34,7 +32,7 @@ async def pre_reset_password(data: PreResetPassword, db: AsyncSession = Depends(
         }
         ```
     """
-    user = await User.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
 
@@ -44,7 +42,7 @@ async def pre_reset_password(data: PreResetPassword, db: AsyncSession = Depends(
 
 # Reset password
 @router.post("/reset_password", status_code=status.HTTP_200_OK)
-async def reset_password(data: ResetPassword, db: AsyncSession = Depends(get_session)):
+async def reset_password(data: ResetPassword):
     """
     Reset the user's password after verifying the OTP.
 
@@ -70,14 +68,12 @@ async def reset_password(data: ResetPassword, db: AsyncSession = Depends(get_ses
     if not otp or otp != data.verification_code:
         raise HTTPException(status_code=400, detail=_("Invalid OTP or OTP expired."))
 
-    user = await User.get_user_by_phone_number(db, data.phone_number)
+    user = await User.get_user_by_phone_number(data.phone_number)
     if not user:
         raise HTTPException(status_code=400, detail=_("User does not exist."))
 
     user.password_hash = hash_password(data.password)
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    await user.save()
 
     await OTPManager.delete_otp(data.phone_number, "reset_password")
 
