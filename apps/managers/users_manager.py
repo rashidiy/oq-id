@@ -1,3 +1,5 @@
+from time import time
+
 from sqlalchemy import select
 
 from db import BaseManager
@@ -28,5 +30,11 @@ class UserManager(BaseManager):
             new_user = cls(phone_number=phone_number, password_hash=hash_password(password))
             session.add(new_user)
             await session.commit()
-            await session.refresh(new_user)
             return new_user
+
+    @classmethod
+    async def update_user(cls, user) -> None:
+        """Updates the user in the database."""
+        async with cls._get_session() as session:
+            await session.merge(user)
+            await session.commit()

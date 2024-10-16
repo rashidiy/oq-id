@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 
 from forms.auth_forms import (PreResetPassword, ResetPassword)
+from managers import UserManager
 from models.users import User
 from utils.helpers import (OTPManager, AuthService)
 from utils.password import hash_password
@@ -73,7 +74,7 @@ async def reset_password(data: ResetPassword):
         raise HTTPException(status_code=400, detail=_("User does not exist."))
 
     user.password_hash = hash_password(data.password)
-    await user.save()
+    await User.update_user(user)
 
     await OTPManager.delete_otp(data.phone_number, "reset_password")
 
