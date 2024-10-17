@@ -1,9 +1,15 @@
-from time import time
-
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import jwt, JWTError
 from sqlalchemy import select
+from starlette import status
 
 from db import BaseManager
+from settings.config import conf
 from utils.password import hash_password
+from utils.translations import trans as _
+
+http_bearer = HTTPBearer()
 
 
 class UserManager(BaseManager):
@@ -38,3 +44,16 @@ class UserManager(BaseManager):
         async with cls._get_session() as session:
             await session.merge(user)
             await session.commit()
+
+    @classmethod
+    async def current(cls, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)):
+        token = credentials.credentials
+        try:
+            payload = jwt.decode(token, conf.SECRET_KEY, algorithms=[conf.JWT_ALGORITHM])
+            return await cls.get(phone_number=payload.get('sub'))
+        except JWTError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=_("Could not validate credentials"),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
