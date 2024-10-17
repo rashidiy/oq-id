@@ -21,5 +21,22 @@ class User(Base, UserManager):
     permissions: Mapped[list['UserPermission']] = relationship(back_populates='user', lazy='selectin')
     companies: Mapped[list['Company']] = relationship(back_populates='user', lazy='selectin')
 
+    @property
+    def to_dict(self):
+        """users data including None values, exclude sensitive fields."""
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "phone_number": self.phone_number,
+            "gender": self.gender,
+            "birth_date": self.birth_date,
+            "bio": self.bio,
+            "avatar": self.avatar,
+            "email": self.email,
+            "telegram_id": self.telegram_id,
+            "developer_mode": self.developer_mode,
+        }
+
     def __str__(self):
-        return f'{self.phone_number} {self.first_name}'
+        return f'{self.to_dict}'
