@@ -1,6 +1,6 @@
-from .register import *
-from .login import *
-from .reset_password import *
+import routers.auth.register
+import routers.auth.login
+import routers.auth.reset_password
 
 from .base import router
 

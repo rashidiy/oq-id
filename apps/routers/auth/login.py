@@ -2,13 +2,11 @@ from datetime import timedelta
 
 from fastapi import HTTPException, status
 
-from forms.auth_forms import (LoginRequest, PreLoginRequest)
+from forms.auth import PreLoginRequest, LoginRequest
 from models.users import User
 from settings.config import Config
-from utils.helpers import (OTPManager, AuthService)
-from utils.jwt import create_access_token, create_refresh_token
-from utils.password import verify_password
-from utils.translations import _  # noqa
+from utils.services import OTPManager, AuthService, create_access_token, create_refresh_token
+from utils.translations import trans as _
 from .base import router
 
 

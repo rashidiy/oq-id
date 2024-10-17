@@ -1,7 +1,5 @@
 import random
 
-from fastapi import HTTPException
-
 from settings.config import redis_client
 
 

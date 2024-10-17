@@ -6,7 +6,8 @@ from fastapi import FastAPI
 
 from routers.auth import router as auth_router
 from routers.users import router as users_router
-from utils.middlewares.middlewares import init_middlewares
+
+from utils.middlewares.language import LanguageMiddleware
 
 BASE_DIR = os.path.dirname(__file__)
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
