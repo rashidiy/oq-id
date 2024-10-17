@@ -73,7 +73,7 @@ async def reset_password(data: ResetPassword):
     if not user:
         raise HTTPException(status_code=400, detail=_("User does not exist."))
 
-    user.password_hash = hash_password(data.password)
+    user.password_hash = User.hash_password(data.password)
     await User.update_user(user)
 
     await OTPManager.delete_otp(data.phone_number, "reset_password")
