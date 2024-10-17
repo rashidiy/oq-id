@@ -38,6 +38,5 @@ class User(Base, UserManager):
             "developer_mode": self.developer_mode,
         }
 
-
     def __str__(self):
         return f'{self.to_dict}'
