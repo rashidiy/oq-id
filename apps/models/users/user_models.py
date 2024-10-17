@@ -40,4 +40,4 @@ class User(Base, UserManager):
 
 
     def __str__(self):
-        return f'{self.phone_number} {self.first_name}'
+        return f'{self.to_dict}'
