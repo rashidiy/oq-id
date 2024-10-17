@@ -1,12 +1,7 @@
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from dotenv import load_dotenv
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
-
 
 
 @dataclass
@@ -19,4 +14,3 @@ class Config:
 redis_client = Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 conf = Config()
-

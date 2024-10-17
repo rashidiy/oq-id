@@ -20,3 +20,6 @@ class User(Base, UserManager):
     # One-to-many
     permissions: Mapped[list['UserPermission']] = relationship(back_populates='user', lazy='selectin')
     companies: Mapped[list['Company']] = relationship(back_populates='user', lazy='selectin')
+
+    def __str__(self):
+        return f'{self.phone_number} {self.first_name}'

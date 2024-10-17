@@ -90,7 +90,7 @@ async def set_locale(request: Request):
     translation_wrapper.translations.install()
 
 
-def _(message: str) -> str:
+def trans(message: str) -> str:
     """
     Get the translated string for the specified message.
 

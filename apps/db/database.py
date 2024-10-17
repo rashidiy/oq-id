@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import select, and_
 
 load_dotenv()
 
@@ -34,3 +35,16 @@ class BaseManager:
                 yield session
             finally:
                 await session.close()
+
+    @classmethod
+    async def get(cls, **kwargs):
+        """Fetches a user by their fields."""
+        for field_name in kwargs.keys():
+            if not hasattr(cls, field_name):
+                raise ValueError(f"{field_name} is not a valid field of {cls.__name__}")
+
+        async with cls._get_session() as session:
+            conditions = [getattr(cls, field_name) == field_value for field_name, field_value in kwargs.items()]
+            query = select(cls).where(and_(*conditions))
+            result = await session.execute(query)
+            return result.scalar_one_or_none()
