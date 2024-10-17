@@ -38,7 +38,7 @@ async def pre_login(data: PreLoginRequest):
     if not user:
         raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
 
-    if not verify_password(data.password, str(user.password_hash)):
+    if not User.verify_password(data.password, str(user.password_hash)):
         raise HTTPException(status_code=400, detail=_("Invalid password."))
 
     await AuthService.send_verification_code(data.phone_number, "login")
@@ -77,7 +77,7 @@ async def login(data: LoginRequest):
     if not user:
         raise HTTPException(status_code=400, detail=_("Invalid phone number or user does not exist."))
 
-    if not verify_password(data.password, str(user.password_hash)):
+    if not User.verify_password(data.password, str(user.password_hash)):
         raise HTTPException(status_code=400, detail=_("Invalid password."))
 
     otp = await OTPManager.get_otp(data.phone_number, "login")
