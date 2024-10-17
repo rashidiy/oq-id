@@ -2,7 +2,7 @@ import re
 
 from pydantic import BaseModel, constr, field_validator
 
-from utils.translations import _  # noqa
+from utils.translations import trans as _
 
 
 def validate_phone_format(phone_number: str) -> str:

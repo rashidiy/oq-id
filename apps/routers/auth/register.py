@@ -9,7 +9,7 @@ from models.users import User
 from settings.config import Config
 from utils.helpers import (OTPManager, AuthService)
 from utils.jwt import create_access_token, create_refresh_token
-from utils.translations import _  # noqa
+from utils.translations import trans as _
 from .base import router
 
 

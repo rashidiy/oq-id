@@ -5,7 +5,7 @@ from managers import UserManager
 from models.users import User
 from utils.helpers import (OTPManager, AuthService)
 from utils.password import hash_password
-from utils.translations import _  # noqa
+from utils.translations import trans as _
 from .base import router
 
 
