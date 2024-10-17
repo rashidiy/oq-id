@@ -14,18 +14,20 @@ sys.path.append(os.path.join(BASE_DIR, 'apps'))
 
 load_dotenv()
 
+routers = [auth_router, users_router]
+middlewares = [LanguageMiddleware]
 
-app = FastAPI(
-    title="OQ-ID APIGATEWAY",
-    version="1.0",
-    docs_url='/',
-)
+app = FastAPI(title="OQ-ID APIGATEWAY", version="1.0", docs_url='/')
 
-init_middlewares(app)
-app.include_router(auth_router, prefix="/api/v1", tags=["Auth"])
-app.include_router(users_router, prefix="/api/v1", tags=["Users"])
 
-if __name__ == "__main__":
-    import uvicorn
+def init_middlewares():
+    for middleware in middlewares:
+        app.add_middleware(middleware)
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+def load_routers():
+    for router in routers:
+        app.include_router(router)
+
+init_middlewares()
+load_routers()
