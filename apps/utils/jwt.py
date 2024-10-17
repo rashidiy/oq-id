@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from jose import JWTError, jwt
+from jose import jwt
+
 from settings.config import conf
 
 
@@ -17,11 +18,3 @@ def create_refresh_token(data: dict):
     to_encode = data.copy()
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, conf.SECRET_KEY, algorithm=conf.JWT_ALGORITHM)
-
-
-def verify_token(token: str):
-    try:
-        payload = jwt.decode(token, conf.SECRET_KEY, algorithms=conf.JWT_ALGORITHM)
-        return payload
-    except JWTError:
-        return None
