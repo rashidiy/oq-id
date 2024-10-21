@@ -3,6 +3,7 @@ import sys
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
 
 from routers.auth import router as auth_router
 from routers.users import router as users_router
@@ -18,6 +19,7 @@ routers = [auth_router, users_router]
 middlewares = [LanguageMiddleware]
 
 app = FastAPI(title="OQ-ID APIGATEWAY", version="1.0", docs_url='/')
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 def init_middlewares():

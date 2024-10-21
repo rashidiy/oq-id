@@ -161,3 +161,6 @@ cython_debug/
 .idea/
 alembic/versions/*
 !alembic/versions/000_init.py
+
+uploads/*
+!uploads/apps/logos/readme.md
