@@ -3,6 +3,7 @@ from datetime import timedelta
 from fastapi import HTTPException, status
 
 from forms.auth import PreLoginRequest, LoginRequest
+from managers import PassManager
 from models.users import User
 from settings.config import Config
 from utils.services import OTPManager, AuthService, create_access_token, create_refresh_token
@@ -38,7 +39,7 @@ async def pre_login(data: PreLoginRequest):
     if not user:
         raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
 
-    if not User.verify_password(data.password, str(user.password_hash)):
+    if not PassManager.verify_password(data.password, str(user.password_hash)):
         raise HTTPException(status_code=400, detail=_("Invalid password."))
 
     await AuthService.send_verification_code(data.phone_number, "login")
@@ -77,7 +78,7 @@ async def login(data: LoginRequest):
     if not user:
         raise HTTPException(status_code=400, detail=_("Invalid phone number or user does not exist."))
 
-    if not User.verify_password(data.password, str(user.password_hash)):
+    if not PassManager.verify_password(data.password, str(user.password_hash)):
         raise HTTPException(status_code=400, detail=_("Invalid password."))
 
     otp = await OTPManager.get_otp(data.phone_number, "login")
