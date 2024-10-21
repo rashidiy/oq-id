@@ -26,7 +26,7 @@ def upgrade() -> None:
         alembic upgrade head
 
     """
-    for table_name in ('users', 'companies', 'userpermissions'):
+    for table_name in ('users', 'userpermissions'):
         op.create_table(
             table_name,
             sa.Column('id', sa.BigInteger(), autoincrement=True, nullable=False),
@@ -35,5 +35,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    for table_name in ('userpermissions', 'users', 'companies'):  
+    for table_name in ('userpermissions', 'users'):
         op.drop_table(table_name)
