@@ -21,6 +21,9 @@ bcrypt = "^4.2.0"
 python-jose = "^3.3.0"
 redis = {extras = ["asyncio"], version = "^5.1.1"}
 aioredis = "^2.0.1"
+uvicorn = "^0.32.0"
+python-multipart = "^0.0.12"
+pillow = "^11.0.0"
 
 
 [tool.poetry.group.dev.dependencies]

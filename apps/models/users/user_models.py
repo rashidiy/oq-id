@@ -19,11 +19,12 @@ class User(Base, UserManager):
 
     # One-to-many
     permissions: Mapped[list['UserPermission']] = relationship(back_populates='user', lazy='selectin')
-    companies: Mapped[list['Company']] = relationship(back_populates='user', lazy='selectin')
+    apps: Mapped[list['App']] = relationship(back_populates='user', lazy='selectin')
 
     @property
     def to_dict(self):
         """users data including None values, exclude sensitive fields."""
+        # todo use BaseManager's to_dict method
         return {
             "id": self.id,
             "first_name": self.first_name,

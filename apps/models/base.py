@@ -17,11 +17,3 @@ class Base(AsyncAttrs, DeclarativeBase):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now())
-
-    @classmethod
-    async def create(cls, session: AsyncSession, **kwargs):
-        instance = cls(**kwargs)
-        session.add(instance)
-        await session.commit()
-        await session.refresh(instance)
-        return instance
