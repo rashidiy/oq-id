@@ -35,5 +35,5 @@ async def patch_user(update_data: UserUpdateRequest, user: User = Depends(User.c
             else:
                 setattr(user, field, value)
 
-    await User.update_user(user)
+    await User.update(user)
     return {"success": True, "message": _("User updated successfully"), "user_forms": user.to_dict}
