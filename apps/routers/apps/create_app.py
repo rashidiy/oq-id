@@ -17,6 +17,20 @@ async def create_app(
         redirect_url: str = Depends(validated_redirect_url),
         logo: UploadFile = File(...)
 ):
+    """
+        Create a new app.
+
+        This endpoint lets you create a new app and generate a unique token for it.
+
+        - **name**: The name of the app (required).
+        - **app_type**: The type of the app (e.g., web, mobile) (required).
+        - **redirect_url**: The URL where users are redirected after authentication (required).
+        - **logo**: A logo image for the app (will be resized to 250x250).
+
+        Returns:
+        - Success message and the app's details, including a token for future API use.
+    """
+
     secret_key = App.generate_secret_key()
     app = await App.create(
         user_id=user.id,
