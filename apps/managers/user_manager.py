@@ -59,3 +59,17 @@ class UserManager(BaseManager):
                 detail=_("Permission denied"),
             )
         return user
+
+    @classmethod
+    async def get_user_by_email(cls, email: str):
+        """Fetches a user by their email."""
+        async with cls._get_session() as session:
+            result = await session.execute(select(cls).where(cls.email == email))
+            return result.scalar_one_or_none()
+
+    @classmethod
+    async def update_user(cls, user) -> None:
+        """Updates the user in the database."""
+        async with cls._get_session() as session:
+            await session.merge(user)
+            await session.commit()

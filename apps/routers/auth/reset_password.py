@@ -1,8 +1,9 @@
 from fastapi import HTTPException, status
 
 from forms.auth.reset_pass_forms import (PreResetPassword, ResetPassword)
+from managers import PassManager
 from models.users import User
-from utils.services import OTPManager, AuthService
+from utils.services import OTPManager, AuthService, TokenManager
 from utils.translations import trans as _
 from .base import router
 
@@ -68,12 +69,23 @@ async def reset_password(data: ResetPassword):
         raise HTTPException(status_code=400, detail=_("Invalid OTP or OTP expired."))
 
     user = await User.get_user_by_phone_number(data.phone_number)
+
     if not user:
         raise HTTPException(status_code=400, detail=_("User does not exist."))
 
-    user.password_hash = User.hash_password(data.password)
+    user.password_hash = PassManager.hash_password(data.password)
     await User.update(user)
 
     await OTPManager.delete_otp(data.phone_number, "reset_password")
-
     return {"success": True, "message": _("Password reset successful!")}
+
+
+@router.post("/refresh_token", response_model=dict)
+async def refresh_access_token(refresh_token: str):
+    payload = TokenManager.verify_token(refresh_token)
+    if not payload or payload.get("token_type") != "refresh":
+        raise HTTPException(status_code=401, detail="Invalid token type. Only refresh tokens are allowed.")
+
+    new_access_token = TokenManager.create_access_token(data={"sub": payload["sub"]})
+
+    return {"access_token": new_access_token}

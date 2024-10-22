@@ -6,7 +6,7 @@ from forms.auth import PreLoginRequest, LoginRequest
 from managers import PassManager
 from models.users import User
 from settings.config import Config
-from utils.services import OTPManager, AuthService, create_access_token, create_refresh_token
+from utils.services import OTPManager, AuthService, TokenManager
 from utils.translations import trans as _
 from .base import router
 
@@ -86,8 +86,8 @@ async def login(data: LoginRequest):
         raise HTTPException(status_code=400, detail=_("Invalid validation code or it has expired."))
 
     access_token_expires = timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user.phone_number}, expires_delta=access_token_expires)
-    refresh_token = create_refresh_token(data={"sub": user.phone_number})
+    access_token = TokenManager.create_access_token(data={"sub": user.phone_number}, expires_delta=access_token_expires)
+    refresh_token = TokenManager.create_refresh_token(data={"sub": user.phone_number})
 
     await OTPManager.delete_otp(data.phone_number, "login")
 

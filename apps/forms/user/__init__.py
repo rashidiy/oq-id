@@ -1,1 +1,1 @@
-from .user_forms import UserUpdateRequest
+from .user_forms import UserUpdateRequest, ChangePhoneEmailRequest, VerifyRequest
