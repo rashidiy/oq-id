@@ -25,4 +25,4 @@ class App(Base, AppManager):
     secret_hash: Mapped[str] = mapped_column(String(250), nullable=False)
 
     user: Mapped['User'] = relationship(back_populates="apps")
-    permissions: Mapped[list['UserPermission']] = relationship(back_populates="app")
+    user_permissions: Mapped[list['UserPermission']] = relationship(back_populates="app")
