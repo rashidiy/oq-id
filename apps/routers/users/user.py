@@ -10,7 +10,7 @@ from utils.services import AuthService, OTPManager, TokenManager
 from utils.translations import trans as _
 from utils.validators import validate_phone_format
 
-router = APIRouter(prefix="/api/v1", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["Users"])
 http_bearer = HTTPBearer()
 
 
