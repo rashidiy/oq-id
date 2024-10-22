@@ -1,15 +1,13 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 from sqlalchemy import select
 from starlette import status
 
 from db import BaseManager
+from managers import PassManager
 from settings.config import conf
 from utils.translations import trans as _
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 http_bearer = HTTPBearer()
 
@@ -34,39 +32,33 @@ class UserManager(BaseManager):
     @classmethod
     async def create_user(cls, phone_number: str, password: str):
         """Creates a new user and stores them in the db."""
-        async with cls._get_session() as session:
-            new_user = cls(phone_number=phone_number, password_hash=cls.hash_password(password))
-            session.add(new_user)
-            await session.commit()
-            return new_user
-
-    @classmethod
-    async def update_user(cls, user) -> None:
-        """Updates the user in the database."""
-        async with cls._get_session() as session:
-            await session.merge(user)
-            await session.commit()
+        return await cls.create(phone_number=phone_number, password_hash=PassManager.hash_password(password))
 
     @classmethod
     async def current(cls, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)):
         token = credentials.credentials
         try:
             payload = jwt.decode(token, conf.SECRET_KEY, algorithms=[conf.JWT_ALGORITHM])
-            return await cls.get(phone_number=payload.get('sub'))
+            user = await cls.get(phone_number=payload.get('sub'))
+            if user:
+                return user
         except JWTError:
+            pass
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=_("Could not validate credentials"),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    @classmethod
+    async def developer(cls, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)):
+        user = await cls.current(credentials=credentials)
+        if not user.developer_mode:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=_("Could not validate credentials"),
-                headers={"WWW-Authenticate": "Bearer"},
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=_("Permission denied"),
             )
-
-    @staticmethod
-    def hash_password(password: str):
-        return pwd_context.hash(password)
-
-    @staticmethod
-    def verify_password(plain_password: str, hashed_password: str):
-        return pwd_context.verify(plain_password, hashed_password)
+        return user
 
     @classmethod
     async def get_user_by_email(cls, email: str):

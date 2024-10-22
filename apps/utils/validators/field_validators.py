@@ -1,5 +1,8 @@
 import re
 
+from fastapi import HTTPException, Form
+from starlette import status
+
 from utils.translations import trans as _
 
 
@@ -48,3 +51,29 @@ def validate_password(password: str) -> str:
         raise ValueError(_("Password must contain at least one digit."))
     if not has_special:
         raise ValueError(_("Password must contain at least one special character."))
+
+    return password
+
+
+def validated_redirect_url(redirect_url: str = Form(...)):
+    pattern = r'^(https|[a-zA-Z][a-zA-Z0-9+.-]*):\/\/[a-zA-Z0-9.-]+(\/[a-zA-Z0-9._~%!$&\'()*+,;=:@\/?]*)?$'
+
+    if not re.match(pattern, redirect_url):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=_("Invalid (deep) link. Must follow deep link format: <scheme>://<host>/<path>?<query"),
+        )
+
+    if redirect_url.startswith('http:'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=_("Invalid URL scheme: 'http:' found. Expected 'https:' instead.")
+        )
+
+    return redirect_url
+
+
+def validate_redirect_url_on_update(redirect_url: str = Form(None)):
+    if not redirect_url:
+        return redirect_url
+    return validated_redirect_url(redirect_url)
