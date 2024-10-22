@@ -67,3 +67,10 @@ class UserManager(BaseManager):
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str):
         return pwd_context.verify(plain_password, hashed_password)
+
+    @classmethod
+    async def get_user_by_email(cls, email: str):
+        """Fetches a user by their email."""
+        async with cls._get_session() as session:
+            result = await session.execute(select(cls).where(cls.email == email))
+            return result.scalar_one_or_none()
