@@ -73,7 +73,7 @@ async def patch_user(update_data: UserUpdateRequest, user: User = Depends(User.c
             else:
                 setattr(user, field, value)
 
-    await User.update_user(user)
+    await user.update_user(user)
     return {"success": True, "message": _("User updated successfully"), "datas": user.to_dict}
 
 
@@ -170,7 +170,7 @@ async def verify_contact_change(data: VerifyRequest, user: User = Depends(User.c
         if not otp or otp != data.vc_code:
             raise HTTPException(status_code=400, detail=_("Invalid verification code or expired."))
         user.phone_number = validated_phone_number
-        await User.update_user(user)
+        await user.update_user(user)
 
         access_token = TokenManager.create_access_token(data={"sub": validated_phone_number})
         refresh_token = TokenManager.create_refresh_token(data={"sub": validated_phone_number})
@@ -188,7 +188,7 @@ async def verify_contact_change(data: VerifyRequest, user: User = Depends(User.c
             raise HTTPException(status_code=400, detail=_("Invalid verification code or expired."))
 
         user.email = data.new_email
-        await User.update_user(user)
+        await user.update_user(user)
 
         return {
             "success": True,
