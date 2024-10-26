@@ -5,11 +5,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 
+from apis.oq_auth import router as api_auth_router
+from routers.apps import router as applications_router
 from routers.auth import router as auth_router
 from routers.users import router as users_router
-from routers.apps import router as applications_router
-from apis.oq_auth import router as api_auth_router
-
 from utils.middlewares.language import LanguageMiddleware
 
 BASE_DIR = os.path.dirname(__file__)
