@@ -1,9 +1,7 @@
 from fastapi import HTTPException, Depends
 from pydantic import BaseModel
-from sqlalchemy import select
 
-from db import BaseManager
-from models import UserPermission, User, App
+from models import UserPermission, App, User
 from utils.translations import trans as _
 from .base import router
 
@@ -15,31 +13,30 @@ class GrantPermissionRequest(BaseModel):
 @router.post("/set_permission", status_code=201)
 async def create_permission(
         permission_data: GrantPermissionRequest,
-        current_user: User = Depends(User.current)
-):
-    """Create a new permission for the authenticated user and a specified app."""
+        current_user=Depends(User.current)):
+    """
+    Create a new permission for the authenticated user and a specified app.
 
-    async with BaseManager._get_session() as session:
-        app = await App.get_obj_or_404(id=permission_data.app_id)
+    Parameters:
+    permission_data : containing the app_id.
+    current_user (User, optional): The authenticated user.
 
-        existing_permission = await session.execute(
-            select(UserPermission).where(
-                UserPermission.user_id == current_user.id,
-                UserPermission.app_id == app.id
-            )
-        )
-        if existing_permission.scalars().first() is not None:
-            raise HTTPException(status_code=400, detail=_("Permission already exists for this user and app."))
+    Returns:
+    dict: A dictionary containing the success status, message, and the created permission.
+    """
 
-        new_permission = UserPermission(user_id=current_user.id, app_id=app.id)
-        session.add(new_permission)
-        await session.commit()
+    app = await App.get_obj_or_404(id=permission_data.app_id)
+
+    if await current_user.item_exists(user_id=current_user.id, app_id=app.id):
+        raise HTTPException(status_code=400, detail=_("Permission already exists for this user and app."))
+
+    await UserPermission.create(user_id=current_user.id, app_id=app.id)
 
     return {
         "success": True,
-        "message": _("Permission created successfully"),
+        "message": _("Permission assigned successfully!"),
         "permission": {
             "user_id": current_user.id,
-            "app_id": new_permission.app_id,
+            "app_id": app.id,
         }
     }

@@ -1,91 +1,70 @@
 from fastapi import HTTPException, status
 
-from forms.auth.reset_pass_forms import (PreResetPassword, ResetPassword)
+from forms.auth.reset_pass_forms import PreResetPassword, ResetPassword
 from managers import PassManager
-from models.users import User
+from models import User
 from utils.services import OTPManager, AuthService, TokenManager
 from utils.translations import trans as _
 from .base import router
 
 
-# Pre-reset password
 @router.post("/pre_reset_password")
 async def pre_reset_password(data: PreResetPassword):
     """
-    Pre-reset the password by sending a verification code.
+    Send a verification code to the user's phone number for password reset.
 
-    This endpoint checks if the user exists and sends an OTP to the
-    provided phone number for password reset.
+    Parameters:
+    data (json): user's phone number.
 
-    - **Parameters**:
-        - `data`: The request data including `phone_number`.
-
-    - **Responses**:
-        - **200**: Verification code sent successfully.
-        - **400**: User does not exist.
-
-    - **Example**:
-        ```json
-        {
-            "success": true,
-            "message": "Verification code has been sent successfully."
-        }
-        ```
+    Returns:
+    dict: A dictionary with 'success' and 'message' keys. 'success' is True if the verification code was sent successfully,
+          False otherwise. 'message' contains a description of the operation result.
     """
-    user = await User.get_user_by_phone_number(data.phone_number)
+    user = await User.get_by(phone_number=data.phone_number)
     if not user:
-        raise HTTPException(status_code=400, detail=_("User with this phone number does not exist."))
+        raise HTTPException(status_code=400,
+                            detail=_(f"User with this phone number {data.phone_number} does not exist."))
 
     await AuthService.send_verification_code(data.phone_number, "reset_password")
+
     return {"success": True, "message": _("Verification code has been sent successfully.")}
 
 
-# Reset password
 @router.post("/reset_password", status_code=status.HTTP_200_OK)
 async def reset_password(data: ResetPassword):
     """
-    Reset the user's password after verifying the OTP.
+    Reset the user's password using a verification code sent to their phone number.
 
-    This endpoint validates the OTP and updates the user's password if valid.
+    Parameters:
+    data (json): user's phone number,
+                         verification code, and new password.
 
-    - **Parameters**:
-        - `data`: The reset data including `phone_number`, `verification_code`, and `password`.
-
-    - **Responses**:
-        - **200**: Password reset successfully.
-        - **400**: Invalid OTP or user does not exist.
-
-    - **Example**:
-        ```json
-        {
-            "success": true,
-            "message": "Password reset successful!"
-        }
-        ```
+    Returns:
+    dict: A dictionary with 'success' and 'message' keys. 'success' is True if the password reset was successful,
+          False otherwise. 'message' contains a description of the operation result.
     """
     otp = await OTPManager.get_otp(data.phone_number, "reset_password")
 
     if not otp or otp != data.verification_code:
         raise HTTPException(status_code=400, detail=_("Invalid OTP or OTP expired."))
 
-    user = await User.get_user_by_phone_number(data.phone_number)
+    user = await User.get_by(phone_number=data.phone_number)
 
     if not user:
         raise HTTPException(status_code=400, detail=_("User does not exist."))
 
     user.password_hash = PassManager.hash_password(data.password)
     await User.update(user)
-
     await OTPManager.delete_otp(data.phone_number, "reset_password")
+
     return {"success": True, "message": _("Password reset successful!")}
 
 
 @router.post("/refresh_token", response_model=dict)
 async def refresh_access_token(refresh_token: str):
     payload = TokenManager.verify_token(refresh_token)
-    if not payload or payload.get("token_type") != "refresh":
-        raise HTTPException(status_code=401, detail="Invalid token type. Only refresh tokens are allowed.")
+    if payload.get("token_type") != "refresh":
+        raise HTTPException(status_code=401, detail=_("Invalid token type. Only refresh tokens are allowed."))
 
     new_access_token = TokenManager.create_access_token(data={"sub": payload["sub"]})
-
     return {"access_token": new_access_token}
