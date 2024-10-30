@@ -1,8 +1,9 @@
 from fastapi import HTTPException, status, Request
+
 from forms.auth.reset_pass_forms import PreResetPassword, ResetPassword
 from managers import PassManager
 from models import User
-from utils.services import OTPManager, AuthService, TokenManager
+from utils.services import AuthService, TokenManager
 from utils.translations import trans as _
 from .base import router
 
