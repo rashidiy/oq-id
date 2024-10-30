@@ -2,6 +2,8 @@ import os
 from dataclasses import dataclass
 
 from redis.asyncio import Redis
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 
 @dataclass
@@ -24,3 +26,6 @@ redis_client = Redis(
 )
 
 conf = Config()
+
+limiter = Limiter(key_func=get_remote_address,
+                  storage_uri=f"redis://{Config.REDIS_HOST}:{Config.REDIS_PORT}/{Config.REDIS_DB}")
