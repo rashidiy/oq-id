@@ -11,9 +11,7 @@ class GrantPermissionRequest(BaseModel):
 
 
 @router.post("/set_permission", status_code=201)
-async def create_permission(
-        permission_data: GrantPermissionRequest,
-        current_user=Depends(User.current)):
+async def create_permission(permission_data: GrantPermissionRequest, current_user: User = Depends(User.current)):
     """
     Create a new permission for the authenticated user and a specified app.
 
