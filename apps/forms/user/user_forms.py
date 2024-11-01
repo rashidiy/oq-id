@@ -1,7 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
-from pydantic.v1 import root_validator
+from pydantic import BaseModel, Field, model_validator
 
 
 class UserUpdateRequest(BaseModel):
@@ -17,21 +16,31 @@ class UserUpdateRequest(BaseModel):
 
 class ChangePhoneEmailRequest(BaseModel):
     """Request model for changing phone number or email."""
-    phone_number: Optional[str] = Field(default='Null', title='Phone Number')
-    email: Optional[str] = Field(default='Null', title='Email Address')
+    phone_number: Optional[str] = Field(default=None, title='Phone Number')
+    email: Optional[str] = Field(default=None, title='Email Address')
+
+    @model_validator(mode="before")
+    def validate_one_contact(cls, values):
+        phone = values.get("phone_number")
+        email = values.get("email")
+        if not phone and not email:
+            raise ValueError("You must provide either a phone number or an email address.")
+        if phone and email:
+            raise ValueError("Please provide either a phone number or an email address, not both.")
+        return values
 
 
 class VerifyRequest(BaseModel):
     """Request model for verifying the OTP sent to the user's phone or email."""
     vc_code: str = Field(default='', title="Verification Code")
-    new_phone: Optional[str] = Field(default='Null', title="New Phone Number")
-    new_email: Optional[str] = Field(default='Null', title="New Email Address")
+    new_phone: Optional[str] = Field(default=None, title="New Phone Number")
+    new_email: Optional[str] = Field(default=None, title="New Email Address")
 
-    @root_validator
-    def validate_new_contact(cls, values):
+    @model_validator(mode="before")
+    def validate_only_one_contact(cls, values):
         phone = values.get('new_phone')
         email = values.get('new_email')
-        if not phone and not email:
+        if not (phone or email):
             raise ValueError("Either new phone number or email must be provided.")
         if phone and email:
             raise ValueError("Provide either a new phone number or email, not both.")

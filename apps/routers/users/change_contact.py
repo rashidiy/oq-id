@@ -9,20 +9,13 @@ from utils.validators import validate_phone_format
 from .base import router
 
 
-@router.post("/change_contact", status_code=status.HTTP_200_OK)
+@router.patch("/change_contact", status_code=status.HTTP_200_OK)
 async def change_contact(request: Request, data: ChangePhoneEmailRequest, user: User = Depends(User.current)):
     """
-    This function handles the contact change request for a user. It checks if a new phone number or email is provided,
+    Handles the contact change request for a user, ensuring only one of phone or email is provided,
     validates the format, checks for existing users, sends verification codes, and updates the user's contact information.
-
-    Parameters:
-    - data (ChangePhoneEmailRequest): containing the new phone number and email.
-    - user (User, optional): The current user making the request. Defaults to the user returned by User.current.
-
-    Returns:
-    - A dictionary containing success status and message.
     """
-    if data.phone_number and data.phone_number != "Null":
+    if data.phone_number:
         validated_phone_number = validate_phone_format(data.phone_number)
 
         if validated_phone_number == user.phone_number:
@@ -38,7 +31,7 @@ async def change_contact(request: Request, data: ChangePhoneEmailRequest, user: 
             "message": _(f"Verification code sent to {data.phone_number}.")
         }
 
-    if data.email and data.email != "Null":
+    if data.email:
         if data.email == user.email:
             raise HTTPException(status_code=400, detail=_("You cannot change to your current email address."))
 
@@ -58,17 +51,9 @@ async def change_contact(request: Request, data: ChangePhoneEmailRequest, user: 
 @router.patch("/verify_contact_change")
 async def verify_contact_change(data: VerifyRequest, user: User = Depends(User.current)):
     """
-    This function verifies the contact change request for a user. It checks if a new phone number or email is provided,
-    validates the format, checks for existing users, verifies the verification code, and updates the user's contact information.
-
-    Parameters:
-    - data (VerifyRequest): A data object containing the new phone number, email, and verification code.
-    - user (User, optional): The current user making the request. Defaults to the user returned by User.current.
-
-    Returns:
-    - A dictionary containing success status and message.
+    Verifies the contact change request for a user by checking the OTP and updating contact information.
     """
-    if data.new_phone and data.new_phone != 'Null':
+    if data.new_phone:
         validated_phone_number = validate_phone_format(data.new_phone)
 
         if not validated_phone_number:
@@ -88,7 +73,7 @@ async def verify_contact_change(data: VerifyRequest, user: User = Depends(User.c
             "refresh_token": refresh_token
         }
 
-    if data.new_email and data.new_email != 'Null':
+    if data.new_email:
         await AuthService.verify_otp(data.new_email, data.vc_code, "change_email")
         user.email = data.new_email
         await User.update(user)
