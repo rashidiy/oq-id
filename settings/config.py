@@ -14,7 +14,7 @@ class Config:
     REDIS_HOST: str = os.getenv('REDIS_HOST', 'localhost')
     REDIS_PORT: int = int(os.getenv('REDIS_PORT', 6379))
     REDIS_DB: int = int(os.getenv('REDIS_DB', 0))
-    REDIS_PASSWORD: str = os.getenv('REDIS_PASSWORD', None)
+    REDIS_PASSWORD: str = os.getenv('REDIS_PASSWORD')
 
 
 redis_client = Redis(
@@ -26,6 +26,7 @@ redis_client = Redis(
 )
 
 conf = Config()
-
-limiter = Limiter(key_func=get_remote_address,
-                  storage_uri=f"redis://{Config.REDIS_HOST}:{Config.REDIS_PORT}/{Config.REDIS_DB}")
+limiter = Limiter(
+    key_func=get_remote_address,
+    storage_uri=f"redis://{Config.REDIS_HOST}:{Config.REDIS_PORT}/{Config.REDIS_DB}"
+)
