@@ -13,7 +13,7 @@ class AuthService:
         otp = await OTPManager.generate_otp()
         await OTPManager.store_otp(phone_number, otp, action)
         print(f"Generated OTP for {phone_number}: {otp}")
-        # TODO: Send OTP logic (SMS, etc.)
+        # TODO: Implement OTP sending logic (SMS, Email, etc.)
         return otp
 
     @staticmethod

@@ -1,18 +1,16 @@
-from typing import Optional, Annotated
+from typing import Optional
 
-from fastapi import UploadFile, File, HTTPException
+from fastapi import UploadFile, File, HTTPException, Request
 from fastapi.params import Form, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2AuthorizationCodeBearer
-from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from forms.apps import AppRequest, TokenRegenerateConfirm
 from managers import PassManager
 from models import User, App, AppType
-from .base import router
 from utils.services import AuthService, OTPManager
 from utils.translations import trans as _
 from utils.validators import validate_redirect_url_on_update
+from .base import router
 
 
 @router.post('/pre_regenerate_token')
