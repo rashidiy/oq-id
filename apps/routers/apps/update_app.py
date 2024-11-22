@@ -1,7 +1,9 @@
-from typing import Optional
+from typing import Optional, Annotated
 
 from fastapi import UploadFile, File, HTTPException
 from fastapi.params import Form, Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2AuthorizationCodeBearer
+from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from forms.apps import AppRequest, TokenRegenerateConfirm
@@ -14,10 +16,7 @@ from utils.validators import validate_redirect_url_on_update
 
 
 @router.post('/pre_regenerate_token')
-async def request_to_regenerate_token(
-        data: AppRequest,
-        user: User = Depends(User.developer),
-):
+async def request_to_regenerate_token(request: Request, data: AppRequest, user: User = Depends(User.developer), ):
     """
         Request a new token for an app.
 
@@ -29,7 +28,7 @@ async def request_to_regenerate_token(
         - Success message indicating a verification code was sent to your phone.
     """
     app = await App.get_obj_or_404(id=data.app_id, user_id=user.id)
-    await AuthService.send_verification_code(user.phone_number, f'create_app:{app.id}')
+    await AuthService.send_verification_code(request, user.phone_number, f'create_app:{app.id}')
     return {
         "success": True,
         "message": _("Verification code sent to {phone_number}").format(phone_number=user.phone_number)
