@@ -56,16 +56,13 @@ async def reset_password(data: ResetPassword):
 async def refresh_access_token(refresh_token: str):
     """
     Refresh the access token using the refresh token.
-
-    Parameters:
-    - refresh_token (str): The refresh token.
-
-    Returns:
-    - dict: A dictionary containing the new access token.
     """
     payload = TokenManager.verify_token(refresh_token)
-    if payload.get("token_type") != "refresh":
-        raise HTTPException(status_code=401, detail=_("Invalid token type. Only refresh tokens are allowed."))
+    if not payload:
+        raise HTTPException(
+            status_code=401,
+            detail=_("Invalid token type.")
+        )
 
     new_access_token = TokenManager.create_access_token(data={"sub": payload["sub"]})
     return {"access_token": new_access_token}

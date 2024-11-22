@@ -12,8 +12,7 @@ router = APIRouter(prefix="/api/v1/oq_id/access", tags=["oqauth"])
 @router.post('/user')
 async def get_token(schema: PermissionSchema):
     app_id, token_body = schema.token.split(':')
-    app_id = int(app_id)
-    app = await App.get(id=app_id)
+    app = await App.get(id=int(app_id))
 
     is_token_valid = PassManager.verify_password(token_body, app.secret_hash)
     if not is_token_valid:

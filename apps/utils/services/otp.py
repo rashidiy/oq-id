@@ -12,10 +12,10 @@ class OTPManager:
         return str(random.randint(10000, 99999))
 
     @classmethod
-    async def store_otp(cls, key: str, otp: str, action: str):
+    async def store_otp(cls, key: str, otp: str, action: str, expires: int = 90):
         """Stores OTP in Redis with an expiration time."""
         key = cls._build_key(key, action)
-        await redis_client.setex(key, 90, otp)
+        await redis_client.setex(key, expires, otp)
 
     @classmethod
     async def get_otp(cls, key: str, action: str) -> str:
