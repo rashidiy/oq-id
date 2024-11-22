@@ -9,13 +9,11 @@ from utils.translations import trans as _
 from .base import router
 
 @router.get("/get_me")
-@limiter.limit("1/30 seconds", error_message="Too many requests, please try again in 30 seconds.")
-async def get_me(request: Request):
-    user = await User.current(request)
+@limiter.limit("1/90 seconds", error_message="Too many requests, please try again in 90 seconds.")
+async def get_me(request: Request, user: User = Depends(User.current)):
     if not user:
         raise HTTPException(status_code=404, detail=_("User not found"))
     return {"success": True, "datas": user.to_dict}
-
 
 
 @router.patch("/update_user", response_model=dict)
