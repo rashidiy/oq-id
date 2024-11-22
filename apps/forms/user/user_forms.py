@@ -12,6 +12,7 @@ class UserUpdateRequest(BaseModel):
     bio: Optional[str] = Field(default=None, title="Bio")
     avatar: Optional[str] = Field(default=None, title="Avatar URL")
     developer_mode: Optional[bool] = Field(default=None, title="Developer Mode")
+    remember_me: Optional[bool] = Field(default=None, title="Remember Me")
 
 
 class ChangePhoneEmailRequest(BaseModel):

@@ -16,6 +16,7 @@ class User(Base, UserManager):
     email: Mapped[str] = mapped_column(String(100), nullable=True)
     telegram_id: Mapped[int] = mapped_column(BigInteger(), nullable=True, unique=True)
     developer_mode: Mapped[bool] = mapped_column(Boolean, default=False)
+    remember_me: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # One-to-many
     permissions: Mapped[list['UserPermission']] = relationship(back_populates='user', lazy='selectin')
@@ -37,6 +38,7 @@ class User(Base, UserManager):
             "email": self.email,
             "telegram_id": self.telegram_id,
             "developer_mode": self.developer_mode,
+            "remember_me": self.remember_me,
         }
 
     def __str__(self):
