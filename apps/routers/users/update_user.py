@@ -1,22 +1,21 @@
 from datetime import datetime
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 
 from forms.user import UserUpdateRequest
 from models.users import User
+from settings.config import limiter
 from utils.translations import trans as _
 from .base import router
 
-
 @router.get("/get_me")
-async def get_me(user: User = Depends(User.current)):
+@limiter.limit("1/30 seconds", error_message="Too many requests, please try again in 30 seconds.")
+async def get_me(request: Request):
+    user = await User.current(request)
     if not user:
         raise HTTPException(status_code=404, detail=_("User not found"))
+    return {"success": True, "datas": user.to_dict}
 
-    return {
-        "success": True,
-        "datas": user.to_dict
-    }
 
 
 @router.patch("/update_user", response_model=dict)
