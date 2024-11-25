@@ -1,11 +1,10 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import jwt, JWTError
 from sqlalchemy import select
 from starlette import status
 
 from db import BaseManager
-from settings.config import conf
+from utils.services import TokenManager
 from utils.translations import trans as _
 
 http_bearer = HTTPBearer()
@@ -15,7 +14,7 @@ class UserManager(BaseManager):
     """Handles user-related operations such as registration, authentication, and permissions."""
 
     @classmethod
-    async def item_exists(cls, user_id: int, app_id: int) -> bool:
+    async def perm_exists(cls, user_id: int, app_id: int) -> bool:
         from models import UserPermission
         """Checks if a permission for a specific user and app exists."""
         async with cls._get_session() as session:
@@ -31,20 +30,19 @@ class UserManager(BaseManager):
 
     @classmethod
     async def current(cls, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)):
-        """Gets the current authenticated user based on JWT."""
+        """Gets the current authenticated user based on an access token."""
         token = credentials.credentials
-        try:
-            payload = jwt.decode(token, conf.SECRET_KEY, algorithms=[conf.JWT_ALGORITHM])
-            user = await cls.get_by(phone_number=payload.get('sub'))
-            if user:
-                return user
-        except JWTError:
-            pass
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=_("Could not validate credentials"),
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        payload = TokenManager.verify_token(token, expected_type="access")
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=_("Could not validate credentials"),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        user = await cls.get_by(phone_number=payload.get("sub"))
+        if not user:
+            raise HTTPException(status_code=404, detail=_("User not found"))
+        return user
 
     @classmethod
     async def developer(cls, credentials: HTTPAuthorizationCredentials = Depends(http_bearer)):

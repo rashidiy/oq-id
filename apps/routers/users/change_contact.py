@@ -70,7 +70,8 @@ async def verify_contact_change(data: VerifyRequest, user: User = Depends(User.c
             "success": True,
             "message": _(f"Phone number has been changed to {data.new_phone}."),
             "access_token": access_token,
-            "refresh_token": refresh_token
+            "refresh_token": refresh_token,
+            "type": "bearer"
         }
 
     if data.new_email:

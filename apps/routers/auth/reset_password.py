@@ -26,7 +26,7 @@ async def pre_reset_password(request: Request, data: PreResetPassword):
 
     await AuthService.send_verification_code(request, data.phone_number, "reset_password")
 
-    return {"success": True, "message": _("Verification code has been sent successfully.")}
+    return {"success": True, "message": _(f"Verification code has been sent to {data.phone_number} !")}
 
 
 @router.post("/reset_password", status_code=status.HTTP_200_OK)
@@ -49,20 +49,20 @@ async def reset_password(data: ResetPassword):
     user.password_hash = PassManager.hash_password(data.password)
     await User.update(user)
 
-    return {"success": True, "message": _("Password reset successful!")}
+    return {"success": True, "message": _("Your password has been reset successfully")}
 
 
 @router.post("/refresh_token", response_model=dict)
 async def refresh_access_token(refresh_token: str):
     """
-    Refresh the access token using the refresh token.
+    Refresh the access token using a refresh token.
     """
-    payload = TokenManager.verify_token(refresh_token)
+    payload = TokenManager.verify_token(refresh_token, expected_type="refresh")
     if not payload:
         raise HTTPException(
-            status_code=401,
-            detail=_("Invalid token type.")
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=_("Invalid or expired refresh token.")
         )
 
     new_access_token = TokenManager.create_access_token(data={"sub": payload["sub"]})
-    return {"access_token": new_access_token}
+    return {"access_token": new_access_token, "token_type": "bearer"}
