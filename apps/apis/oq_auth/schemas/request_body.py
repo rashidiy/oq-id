@@ -19,3 +19,12 @@ class TokenValidator(BaseModel):
 
 class PermissionSchema(TokenValidator):
     user_id: int
+
+
+class GenerateAuthCodeReq(BaseModel):
+    app_id: str
+    scope: list[dict]
+
+
+class ExchangeAuthCodeReq(BaseModel):
+    code: str

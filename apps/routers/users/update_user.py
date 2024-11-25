@@ -9,11 +9,11 @@ from utils.translations import trans as _
 from .base import router
 
 @router.get("/get_me")
-@limiter.limit("1/90 seconds", error_message="Too many requests, please try again in 90 seconds.")
+@limiter.limit("2/240 seconds", error_message="Too many requests, please try again in 90 seconds.")
 async def get_me(request: Request, user: User = Depends(User.current)):
     if not user:
         raise HTTPException(status_code=404, detail=_("User not found"))
-    return {"success": True, "datas": user.to_dict}
+    return {"success": True, "data": user.to_dict}
 
 
 @router.patch("/update_user", response_model=dict)
@@ -39,4 +39,4 @@ async def patch_user(update_data: UserUpdateRequest, user: User = Depends(User.c
                 setattr(user, field, value)
 
     await User.update(user)
-    return {"success": True, "message": _("User updated successfully"), "datas": user.to_dict}
+    return {"success": True, "message": _("User updated successfully"), "data": user.to_dict}

@@ -9,11 +9,12 @@ from slowapi.util import get_remote_address
 @dataclass
 class Config:
     SECRET_KEY: str = os.getenv('SECRET_KEY')
-    JWT_ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 15
-    REDIS_HOST: str = os.getenv('REDIS_HOST', 'localhost')
-    REDIS_PORT: int = int(os.getenv('REDIS_PORT', 6379))
-    REDIS_DB: int = int(os.getenv('REDIS_DB', 0))
+    JWT_ALGORITHM = os.getenv('JWT_ALGORITHM')
+    ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')
+    REFRESH_TOKEN_EXPIRE_DAYS = os.getenv('REFRESH_TOKEN_EXPIRE_DAYS')
+    REDIS_HOST: str = os.getenv('REDIS_HOST')
+    REDIS_PORT: int = int(os.getenv('REDIS_PORT'))
+    REDIS_DB: int = int(os.getenv('REDIS_DB'))
     REDIS_PASSWORD: str = os.getenv('REDIS_PASSWORD')
 
 
@@ -26,6 +27,7 @@ redis_client = Redis(
 )
 
 conf = Config()
+
 limiter = Limiter(
     key_func=get_remote_address,
     storage_uri=f"redis://{Config.REDIS_HOST}:{Config.REDIS_PORT}/{Config.REDIS_DB}"
