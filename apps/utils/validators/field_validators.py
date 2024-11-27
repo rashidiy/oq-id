@@ -7,19 +7,34 @@ from utils.translations import trans as _
 
 
 def validate_phone_format(phone_number: str) -> str:
-    """Validate and normalize the Uzbek phone number format."""
-    uzb_phone_regex = r'^(\+998|998)?(9[0-9]{1}|33|88|71)([- ]?)\d{3}([- ]?)\d{2}([- ]?)\d{2}$'
+    """
+    Dynamically validate and normalize Uzbek phone numbers.
+
+    Args:
+        phone_number (str): The phone number input by the user.
+
+    Returns:
+        str: The normalized phone number in the format +998xxxxxxxxx.
+
+    Raises:
+        ValueError: If the phone number format is invalid.
+    """
     cleaned_number = re.sub(r'\D', '', phone_number)
 
-    if re.match(uzb_phone_regex, phone_number):
-        if cleaned_number.startswith('998'):
+    if cleaned_number.startswith('998'):
+        if len(cleaned_number) == 12:  # Correct format
             return f"+{cleaned_number}"
-        elif len(cleaned_number) == 9:
-            return f"+998{cleaned_number}"
         else:
-            raise ValueError(_("Invalid phone number format."))
+            raise ValueError("Phone number error: must be +998xxxxxxxxx")
+
+    elif len(cleaned_number) == 9:
+        return f"+998{cleaned_number}"
+
+    elif len(cleaned_number) < 9:
+        raise ValueError("Phone number error: must include +998xxxxxxxxx")
+
     else:
-        raise ValueError(_("Invalid phone number format."))
+        raise ValueError("Phone number error: Invalid format.")
 
 
 def validate_password(password: str) -> str:
