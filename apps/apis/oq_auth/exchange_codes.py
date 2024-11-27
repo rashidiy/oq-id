@@ -35,11 +35,11 @@ async def generate_authorisation_code(data: GenerateAuthCodeReq, user: User = De
     auth_code = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(64))
 
     redis_payload = {
-        "user_id": user.id,
+        "phone_number": user.phone_number,
         "app_id": data.app_id,
         "scope": data.scope
     }
-    redis_key = f"auth_code:{user.id}:{auth_code}"
+    redis_key = f"auth_code:{user.phone_number}:{auth_code}"
 
     await redis_client.setex(redis_key, 300, json.dumps(redis_payload))
     return {"success": True, "code": auth_code}
@@ -50,7 +50,7 @@ async def exchange_code(data: ExchangeAuthCodeReq, user: User = Depends(User.cur
     """
     Exchanges an authorization code for an access token after validating the code and user.
     """
-    auth_code_key = f"auth_code:{user.id}:{data.code}"
+    auth_code_key = f"auth_code:{user.phone_number}:{data.code}"
     auth_code_data = await redis_client.get(auth_code_key)
 
     if not auth_code_data:
@@ -61,7 +61,8 @@ async def exchange_code(data: ExchangeAuthCodeReq, user: User = Depends(User.cur
 
     auth_code_data = json.loads(auth_code_data)
 
-    if auth_code_data.get("user_id") != user.id:
+    if auth_code_data.get("phone_number") != user.phone_number:
+        print(auth_code_data)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=_("This code does not belong to the current user!")
@@ -69,7 +70,7 @@ async def exchange_code(data: ExchangeAuthCodeReq, user: User = Depends(User.cur
 
     access_token = TokenManager.create_access_token(
         data={
-            "sub": auth_code_data["user_id"],
+            "sub": auth_code_data["phone_number"],
             "app_id": auth_code_data["app_id"],
             "scope": auth_code_data["scope"],
         }
