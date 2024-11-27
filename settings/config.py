@@ -27,7 +27,7 @@ redis_client = Redis(
 )
 
 conf = Config()
-
+DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 limiter = Limiter(
     key_func=get_remote_address,
     storage_uri=f"redis://{Config.REDIS_HOST}:{Config.REDIS_PORT}/{Config.REDIS_DB}"
