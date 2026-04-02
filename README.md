@@ -1,4 +1,4 @@
-# OQ-ID
+# oq-id
 
 Centralized identity service for the OQ platform — phone-based authentication with OTP verification, JWT access/refresh tokens, and OAuth-like application registration.
 
